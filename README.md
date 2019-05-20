@@ -1,0 +1,2 @@
+# Best-Py-Book-on-Amazon
+After searching Amazon for "python programming books", I web scraped the page, after using the "featured" filter, for data to recommend the best book to users. The project is unfinished for visualization because I would prefer titles that appear over each data point when hovered over. So far, I comment out the graph that has titles over each data point because the titles stack over each other, and are not well connected to the data points, at this time.
