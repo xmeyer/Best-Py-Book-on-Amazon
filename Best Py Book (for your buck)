@@ -1,0 +1,81 @@
+import urllib3
+from bs4 import BeautifulSoup
+import pandas as pd
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+import mpld3
+
+def scrape():
+    http = urllib3.PoolManager()
+    url = "https://www.amazon.com/s?k=python+programming+book&s=relevanceblender&crid=KP3G3NCNV1EY&qid=1558069669&sprefix=python+%2Caps%2C196&ref=sr_st_relevanceblender"
+
+    #grabbing the page
+    response = http.request('GET', url)
+
+    #html parsing
+    soup = BeautifulSoup(response.data, features="html.parser")
+    #print(soup.prettify())
+
+    container = soup.find_all("div",{"class":"a-section aok-relative s-image-fixed-height"})
+    #print(len(container)) # recognizes the number of items on first page
+
+    starrings = soup.find_all("div", {"class":"a-row a-size-small"})
+
+    pricings = soup.find_all("span", {"class": "a-offscreen"})
+
+    for i in range(len(container)):
+        title = container[i]
+        titling = title.img.prettify()
+        titles = titling.split('=')[1].split('"')[1]
+
+        star = starrings[i]
+        stars1 = star.span.span.span.prettify()
+        stars = stars1.split('\n')[1]  # star ratings
+        stars = float(stars[:4])
+        #print(title,'\n', stars) # will not print items with no stars, so 20 items so far
+
+        pricing = pricings[i].prettify() # prices need to be analyzed again because it took every price value on the page
+        prices = float(pricing.split('\n')[1][2:])
+        #print(titles,'\n', stars, prices)
+
+
+        f = open("Amazon Data.csv", "a")
+        line = str(titles) + "##" + str(stars) + "##" + str(prices)
+        f.write(line + "\n")
+        f.close()
+
+def graph():
+    f = pd.read_csv('C:/Users/xavie/.PyCharmCE2019.1/config/scratches/Amazon Data.csv', lineterminator='\n', delimiter='##', quotechar="'")
+    f = f.values.tolist()
+
+    titlelist = []
+    starlist = []
+    pricelist = []
+
+    for i in range(len(f)):
+        titlelist.append(f[i][0])
+        starlist.append(f[i][1])
+        pricelist.append(f[i][2])
+
+    df = pd.DataFrame({'Titles': titlelist[:], 'Stars': starlist[:], 'Prices': pricelist[:]})
+    ''' #Use hover titles instead
+    for i, t in enumerate(titlelist):
+        x = starlist[i]
+        y = pricelist[i]
+        plt.scatter(x, y, marker='x', color='red')
+        plt.text(x + 0.1, y + 0.1, t, fontsize=10)
+    plt.show()
+    '''
+
+    ax = sns.regplot(x=df['Stars'],y=df['Prices'], ci=50, marker="*")
+    plt.suptitle('Best Py Book')
+    ax.grid()
+    plt.show()
+    #print(df) # to compare points to titles
+
+def main():
+    #scrape() # Run every time the site is updated, and delete previous csv file. Comment out when ready to dataframe it.
+    graph()
+
+main()
