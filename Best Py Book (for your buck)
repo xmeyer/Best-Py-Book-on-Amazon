@@ -2,9 +2,8 @@ import urllib3
 from bs4 import BeautifulSoup
 import pandas as pd
 import seaborn as sns
-import numpy as np
 import matplotlib.pyplot as plt
-import mpld3
+import plotly.graph_objects as go
 
 def scrape():
     http = urllib3.PoolManager()
@@ -46,7 +45,7 @@ def scrape():
         f.close()
 
 def graph():
-    f = pd.read_csv('C:/Users/xavie/.PyCharmCE2019.1/config/scratches/Amazon Data.csv', lineterminator='\n', delimiter='##', quotechar="'")
+    f = pd.read_csv('C:/Users/xavie/.PyCharmCE2019.1/config/scratches/Amazon Data.csv', lineterminator='\n', delimiter='##', quotechar="'", engine = 'python')
     f = f.values.tolist()
 
     titlelist = []
@@ -59,20 +58,17 @@ def graph():
         pricelist.append(f[i][2])
 
     df = pd.DataFrame({'Titles': titlelist[:], 'Stars': starlist[:], 'Prices': pricelist[:]})
-    ''' #Use hover titles instead
-    for i, t in enumerate(titlelist):
-        x = starlist[i]
-        y = pricelist[i]
-        plt.scatter(x, y, marker='x', color='red')
-        plt.text(x + 0.1, y + 0.1, t, fontsize=10)
-    plt.show()
-    '''
 
+    # Hover Titles Graph # Opens a new page in web browser.
+    fig = go.Figure(data=go.Scatter(x=df['Stars'],y=df['Prices'], mode='markers', text=df['Titles']))  # hover text goes here
+    fig.update_layout(title='Best Py Book')
+    fig.show()
+
+    ## Best Fit Line ##
     ax = sns.regplot(x=df['Stars'],y=df['Prices'], ci=50, marker="*")
     plt.suptitle('Best Py Book')
     ax.grid()
     plt.show()
-    #print(df) # to compare points to titles
 
 def main():
     #scrape() # Run every time the site is updated, and delete previous csv file. Comment out when ready to dataframe it.
